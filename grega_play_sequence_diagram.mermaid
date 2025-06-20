@@ -1,0 +1,91 @@
+sequenceDiagram
+    %% 1. Création d'un événement et invitation des participants
+    participant Client
+    participant NextApp as Next.js App
+    participant SupaAuth as Supabase Auth
+    participant SupaDB as Supabase Database
+    participant SupaStorage as Supabase Storage
+    participant EdgeFunc as Edge Function
+    participant FFmpegAPI as FFmpeg API Externe
+    participant Organizer as Organisateur
+    participant Participant
+    participant MediaRec as MediaRecorder API
+    participant System as Système Auto
+    
+    %% Flux 1: Création d'un événement
+    Client->>NextApp: Accède à /dashboard
+    NextApp->>SupaAuth: Vérifie l'authentification
+    SupaAuth-->>NextApp: Session utilisateur
+    NextApp-->>Client: Affiche le dashboard
+    Client->>NextApp: Soumet formulaire de création d'événement
+    NextApp->>SupaDB: createEvent(eventData)
+    SupaDB-->>NextApp: Données événement créé
+    NextApp->>SupaDB: generateInviteLink(eventId)
+    SupaDB-->>NextApp: Lien d'invitation
+    NextApp-->>Client: Affiche le lien à partager
+    
+    %% Flux 2: Soumission d'une vidéo
+    Participant->>NextApp: Accède au lien d'invitation
+    NextApp->>SupaDB: getEvent(eventId)
+    SupaDB-->>NextApp: Données événement
+    NextApp-->>Participant: Affiche page soumission
+    
+    alt Enregistrement vidéo
+        Participant->>NextApp: Clique "Enregistrer"
+        NextApp->>MediaRec: Demande accès caméra
+        MediaRec-->>Participant: Demande permission
+        Participant-->>MediaRec: Accorde permission
+        MediaRec->>NextApp: Stream vidéo actif
+        Participant->>NextApp: Commence enregistrement
+        NextApp->>MediaRec: startRecording()
+        Participant->>NextApp: Arrête enregistrement
+        NextApp->>MediaRec: stopRecording()
+        MediaRec-->>NextApp: Blob vidéo
+    else Upload vidéo existante
+        Participant->>NextApp: Sélectionne fichier vidéo
+        NextApp->>NextApp: validateVideoFormat(file)
+    end
+    
+    NextApp->>NextApp: compressVideo(videoBlob)
+    NextApp->>SupaStorage: uploadVideo(videoBlob)
+    SupaStorage-->>NextApp: URL stockage
+    NextApp->>SupaDB: createVideo(eventId, url, participantName)
+    SupaDB-->>NextApp: Confirmation
+    NextApp->>SupaDB: createNotification(eventId, "Nouvelle vidéo")
+    SupaDB-->>Organizer: Notification temps réel
+    NextApp-->>Participant: Confirmation soumission
+    
+    %% Flux 3: Génération du montage
+    alt Déclenchement automatique
+        System->>SupaDB: checkEventCompletion(eventId)
+        SupaDB-->>System: Toutes vidéos reçues ou deadline atteinte
+    else Déclenchement manuel
+        Organizer->>SupaDB: triggerMontage(eventId)
+    end
+    
+    SupaDB->>EdgeFunc: initiateVideoProcessing(eventId)
+    EdgeFunc->>SupaDB: getEventVideos(eventId)
+    SupaDB-->>EdgeFunc: Liste videos
+    EdgeFunc->>SupaStorage: getVideosUrls(videoIds)
+    SupaStorage-->>EdgeFunc: URLs vidéos
+    EdgeFunc->>FFmpegAPI: createMontage(videoUrls, params)
+    FFmpegAPI-->>EdgeFunc: URL vidéo montée
+    EdgeFunc->>SupaStorage: downloadFinalVideo(url)
+    EdgeFunc->>SupaStorage: uploadFinalVideo(videoBlob)
+    SupaStorage-->>EdgeFunc: finalVideoUrl
+    EdgeFunc->>SupaDB: updateEvent(eventId, {status: 'done', final_video_path})
+    EdgeFunc->>SupaDB: createNotification(eventId, "Montage terminé")
+    SupaDB-->>Organizer: Notification temps réel
+    
+    %% Flux 4: Accès à la vidéo finale
+    Organizer->>NextApp: Accède à /final/:eventId
+    NextApp->>SupaAuth: Vérifie authentification
+    SupaAuth-->>NextApp: Session utilisateur
+    NextApp->>SupaDB: getEvent(eventId)
+    SupaDB-->>NextApp: Données événement
+    NextApp->>NextApp: Vérifie si user_id == event.user_id
+    NextApp->>SupaDB: getFinalVideo(eventId)
+    SupaDB-->>NextApp: final_video_path
+    NextApp->>SupaStorage: getSignedUrl(final_video_path)
+    SupaStorage-->>NextApp: URL temporaire signée
+    NextApp-->>Organizer: Affiche vidéo avec options téléchargement/partage
