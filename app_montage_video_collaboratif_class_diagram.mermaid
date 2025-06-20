@@ -1,0 +1,116 @@
+classDiagram
+    class User {
+        +string id
+        +string email
+        +string name
+        +string avatar_url
+        +Date created_at
+    }
+    
+    class Event {
+        +string id
+        +string user_id
+        +string title
+        +string theme
+        +Date deadline
+        +number max_videos
+        +string status
+        +Date created_at
+        +string final_video_path
+        +createEvent(data) Event
+        +getEvent(id) Event
+        +getUserEvents(userId) Event[]
+        +updateEvent(id, data) Event
+        +generateInviteLink(eventId) string
+        +triggerMontage(eventId) void
+    }
+    
+    class Video {
+        +string id
+        +string event_id
+        +string user_id
+        +string participant_name
+        +string storage_path
+        +number duration
+        +string status
+        +Date created_at
+        +uploadVideo(eventId, file, name) Video
+        +recordVideo(eventId, stream, name) Video
+        +getEventVideos(eventId) Video[]
+        +getFinalVideo(eventId) string
+    }
+    
+    class Notification {
+        +string id
+        +string event_id
+        +string user_id
+        +string message
+        +boolean read
+        +Date created_at
+        +createNotification(eventId, userId, message) Notification
+        +getUserNotifications(userId) Notification[]
+        +markAsRead(notificationId) void
+        +subscribeToEventUpdates(eventId, callback) function
+    }
+    
+    class AuthService {
+        +signUp(email, password) Promise~User~
+        +signIn(email, password) Promise~User~
+        +signInWithGoogle() Promise~User~
+        +signOut() Promise~void~
+        +getCurrentUser() Promise~User~
+    }
+    
+    class EventService {
+        +createEvent(data) Promise~Event~
+        +getEvent(id) Promise~Event~
+        +getUserEvents(userId) Promise~Event[]~
+        +updateEvent(id, data) Promise~Event~
+        +generateInviteLink(eventId) string
+        +triggerMontage(eventId) Promise~void~
+    }
+    
+    class VideoService {
+        +uploadVideo(eventId, file, name) Promise~Video~
+        +recordVideo(eventId, stream, name) Promise~Video~
+        +getEventVideos(eventId) Promise~Video[]~
+        +getFinalVideo(eventId) Promise~string~
+    }
+    
+    class VideoProcessingService {
+        +compressVideo(file) Promise~File~
+        +validateVideoFormat(file) Promise~boolean~
+        +generateThumbnail(videoPath) Promise~string~
+        +createMontage(videoIds, eventId) Promise~string~
+    }
+    
+    class SupabaseClient {
+        +auth AuthService
+        +storage StorageService
+        +database DatabaseService
+        +realtime RealtimeService
+    }
+    
+    class MediaRecorderWrapper {
+        -MediaRecorder recorder
+        -Blob[] chunks
+        +startRecording(stream) void
+        +stopRecording() Promise~Blob~
+    }
+    
+    User "1" -- "*" Event : creates
+    User "1" -- "*" Video : uploads
+    User "1" -- "*" Notification : receives
+    Event "1" -- "*" Video : contains
+    Event "1" -- "*" Notification : generates
+    
+    AuthService -- User : authenticates
+    EventService -- Event : manages
+    VideoService -- Video : handles
+    VideoProcessingService -- Video : processes
+    
+    SupabaseClient -- AuthService : provides
+    SupabaseClient -- EventService : provides
+    SupabaseClient -- VideoService : provides
+    
+    MediaRecorderWrapper -- VideoService : used by
