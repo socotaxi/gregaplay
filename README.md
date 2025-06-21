@@ -69,6 +69,6 @@ pnpm run build
 
 You can run the Supabase SQL scripts using the Supabase dashboard or with a command-line tool such as `psql`.
 
-## Authentification sociale et téléphonique
+## Authentification sociale Google
 
-L'application prend désormais en charge la connexion via Google ou GitHub ainsi que la connexion par téléphone avec envoi d'OTP grâce à Supabase Auth.
+L'application prend désormais en charge la connexion via Google grâce à Supabase Auth.
