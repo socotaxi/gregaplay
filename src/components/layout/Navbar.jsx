@@ -72,14 +72,18 @@ const Navbar = () => {
                   >
                     <span className="sr-only">Ouvrir le menu utilisateur</span>
                     <div className="h-8 w-8 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-700 font-semibold uppercase">
-                      {profile ? profile.full_name.charAt(0) : user.email.charAt(0)}
+                      {profile?.full_name && profile.full_name !== 'User'
+                        ? profile.full_name.charAt(0)
+                        : (user?.user_metadata?.full_name?.charAt(0) || user.email.charAt(0))}
                     </div>
                   </button>
 
                   {isMenuOpen && (
                     <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5">
                       <div className="px-4 py-2 text-sm text-gray-700 border-b">
-                        {profile ? profile.full_name : user.email}
+                        {profile?.full_name && profile.full_name !== 'User'
+                          ? profile.full_name
+                          : user?.user_metadata?.full_name || user.email}
                       </div>
                       <button
                         onClick={handleSignOut}
