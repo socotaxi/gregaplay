@@ -15,11 +15,11 @@ L'application présente plusieurs défis techniques spécifiques :
 ### 2. Choix des Technologies
 
 #### Frontend
-- **Next.js 14 (App Router)** - Pour le routage côté serveur et les composants React
+- **React 18 avec Vite** - Pour l'application monopage et le routage via React Router
 - **Tailwind CSS** - Pour le design responsive et l'UI
 - **Workbox** - Pour la configuration PWA (service workers, manifest)
 - **MediaRecorder API** - Pour l'enregistrement vidéo natif
-- **@supabase/auth-helpers-nextjs** - Pour l'intégration de l'authentification
+- **@supabase/auth-helpers-react** - Pour l'intégration de l'authentification
 
 #### Backend
 - **Supabase** - Pour la gestion de la base de données, l'authentification et le stockage
@@ -35,10 +35,10 @@ L'application présente plusieurs défis techniques spécifiques :
 
 ### 3. Architecture Globale
 
-Nous adopterons une architecture JAMstack avec Next.js et Supabase :
+Nous adopterons une architecture JAMstack avec React/Vite et Supabase :
 
 1. **Architecture Client-Serverless** :
-   - Next.js pour le rendu côté client et serveur
+   - React (via Vite) pour le rendu côté client
    - Supabase pour les services backend sans serveur
    - Edge Functions pour le traitement asynchrone
 
@@ -150,21 +150,21 @@ Voici les principaux flux d'appels de programme pour les fonctionnalités clés 
 ```mermaid
 sequenceDiagram
     participant Client
-    participant NextApp as Next.js App
+    participant ReactApp as React/Vite App
     participant SupaAuth as Supabase Auth
     participant SupaDB as Supabase Database
     
-    Client->>NextApp: Accède à /dashboard
-    NextApp->>SupaAuth: Vérifie l'authentification
-    SupaAuth-->>NextApp: Session utilisateur
-    NextApp-->>Client: Affiche le dashboard
+    Client->>ReactApp: Accède à /dashboard
+    ReactApp->>SupaAuth: Vérifie l'authentification
+    SupaAuth-->>ReactApp: Session utilisateur
+    ReactApp-->>Client: Affiche le dashboard
     
-    Client->>NextApp: Soumet formulaire de création d'événement
-    NextApp->>SupaDB: createEvent(eventData)
-    SupaDB-->>NextApp: Données événement créé
-    NextApp->>SupaDB: generateInviteLink(eventId)
-    SupaDB-->>NextApp: Lien d'invitation
-    NextApp-->>Client: Affiche le lien à partager
+    Client->>ReactApp: Soumet formulaire de création d'événement
+    ReactApp->>SupaDB: createEvent(eventData)
+    SupaDB-->>ReactApp: Données événement créé
+    ReactApp->>SupaDB: generateInviteLink(eventId)
+    SupaDB-->>ReactApp: Lien d'invitation
+    ReactApp-->>Client: Affiche le lien à partager
 ```
 
 ### 2. Soumission d'une vidéo par un participant
@@ -172,41 +172,41 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant Participant
-    participant NextApp as Next.js App
+    participant ReactApp as React/Vite App
     participant MediaRec as MediaRecorder API
     participant SupaStorage as Supabase Storage
     participant SupaDB as Supabase Database
     participant EventOrg as Organisateur Événement
     
-    Participant->>NextApp: Accède au lien d'invitation
-    NextApp->>SupaDB: getEvent(eventId)
-    SupaDB-->>NextApp: Données événement
-    NextApp-->>Participant: Affiche page soumission
+    Participant->>ReactApp: Accède au lien d'invitation
+    ReactApp->>SupaDB: getEvent(eventId)
+    SupaDB-->>ReactApp: Données événement
+    ReactApp-->>Participant: Affiche page soumission
     
     alt Enregistrement vidéo
-        Participant->>NextApp: Clique "Enregistrer"
-        NextApp->>MediaRec: Demande accès caméra
+        Participant->>ReactApp: Clique "Enregistrer"
+        ReactApp->>MediaRec: Demande accès caméra
         MediaRec-->>Participant: Demande permission
         Participant-->>MediaRec: Accorde permission
-        MediaRec->>NextApp: Stream vidéo actif
-        Participant->>NextApp: Commence enregistrement
-        NextApp->>MediaRec: startRecording()
-        Participant->>NextApp: Arrête enregistrement
-        NextApp->>MediaRec: stopRecording()
-        MediaRec-->>NextApp: Blob vidéo
+        MediaRec->>ReactApp: Stream vidéo actif
+        Participant->>ReactApp: Commence enregistrement
+        ReactApp->>MediaRec: startRecording()
+        Participant->>ReactApp: Arrête enregistrement
+        ReactApp->>MediaRec: stopRecording()
+        MediaRec-->>ReactApp: Blob vidéo
     else Upload vidéo existante
-        Participant->>NextApp: Sélectionne fichier vidéo
-        NextApp->>NextApp: validateVideoFormat(file)
+        Participant->>ReactApp: Sélectionne fichier vidéo
+        ReactApp->>ReactApp: validateVideoFormat(file)
     end
     
-    NextApp->>NextApp: compressVideo(videoBlob)
-    NextApp->>SupaStorage: uploadVideo(videoBlob)
-    SupaStorage-->>NextApp: URL stockage
-    NextApp->>SupaDB: createVideo(eventId, url, participantName)
-    SupaDB-->>NextApp: Confirmation
-    NextApp->>SupaDB: createNotification(eventId, "Nouvelle vidéo")
+    ReactApp->>ReactApp: compressVideo(videoBlob)
+    ReactApp->>SupaStorage: uploadVideo(videoBlob)
+    SupaStorage-->>ReactApp: URL stockage
+    ReactApp->>SupaDB: createVideo(eventId, url, participantName)
+    SupaDB-->>ReactApp: Confirmation
+    ReactApp->>SupaDB: createNotification(eventId, "Nouvelle vidéo")
     SupaDB-->>EventOrg: Notification temps réel
-    NextApp-->>Participant: Confirmation soumission
+    ReactApp-->>Participant: Confirmation soumission
 ```
 
 ### 3. Génération automatique du montage vidéo
@@ -247,22 +247,22 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant Organizer as Organisateur
-    participant NextApp as Next.js App
+    participant ReactApp as React/Vite App
     participant SupaAuth as Supabase Auth
     participant SupaDB as Supabase Database
     participant SupaStorage as Supabase Storage
     
-    Organizer->>NextApp: Accède à /final/:eventId
-    NextApp->>SupaAuth: Vérifie authentification
-    SupaAuth-->>NextApp: Session utilisateur
-    NextApp->>SupaDB: getEvent(eventId)
-    SupaDB-->>NextApp: Données événement
-    NextApp->>NextApp: Vérifie si user_id == event.user_id
-    NextApp->>SupaDB: getFinalVideo(eventId)
-    SupaDB-->>NextApp: final_video_path
-    NextApp->>SupaStorage: getSignedUrl(final_video_path)
-    SupaStorage-->>NextApp: URL temporaire signée
-    NextApp-->>Organizer: Affiche vidéo avec options téléchargement/partage
+    Organizer->>ReactApp: Accède à /final/:eventId
+    ReactApp->>SupaAuth: Vérifie authentification
+    SupaAuth-->>ReactApp: Session utilisateur
+    ReactApp->>SupaDB: getEvent(eventId)
+    SupaDB-->>ReactApp: Données événement
+    ReactApp->>ReactApp: Vérifie si user_id == event.user_id
+    ReactApp->>SupaDB: getFinalVideo(eventId)
+    SupaDB-->>ReactApp: final_video_path
+    ReactApp->>SupaStorage: getSignedUrl(final_video_path)
+    SupaStorage-->>ReactApp: URL temporaire signée
+    ReactApp-->>Organizer: Affiche vidéo avec options téléchargement/partage
 ```
 
 ## Anything UNCLEAR
