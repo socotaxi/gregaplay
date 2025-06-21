@@ -389,57 +389,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Sign in with phone using OTP
-  const signInWithPhone = async ({ phone, token }) => {
-    try {
-      setAuthError(null);
-      if (!token) {
-        const { error } = await supabase.auth.signInWithOtp({
-          phone,
-          options: { shouldCreateUser: true }
-        });
-        if (error) {
-          console.error('OTP request error:', error);
-          setAuthError({
-            type: 'signin',
-            message: error.message || 'Failed to send verification code',
-            details: error
-          });
-          throw error;
-        }
-        return { phase: 'code_sent' };
-      }
-
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone,
-        token,
-        type: 'sms'
-      });
-      if (error) {
-        console.error('OTP verification error:', error);
-        setAuthError({
-          type: 'signin',
-          message: error.message || 'Failed to verify code',
-          details: error
-        });
-        throw error;
-      }
-
-      if (data?.user) {
-        setUser(data.user);
-        await fetchUserProfile(data.user.id);
-      }
-      return data;
-    } catch (error) {
-      console.error('Phone auth error:', error);
-      setAuthError({
-        type: 'signin',
-        message: error.message || 'Phone authentication failed',
-        details: error
-      });
-      throw error;
-    }
-  };
 
   // Sign out user
   const signOut = async () => {
@@ -487,7 +436,6 @@ export const AuthProvider = ({ children }) => {
     signUp,
     signIn,
     signInWithProvider,
-    signInWithPhone,
     signOut,
     updateProfile,
     fetchUserProfile,
