@@ -85,6 +85,13 @@ const Navbar = () => {
                           ? profile.full_name
                           : user?.user_metadata?.full_name || user.email}
                       </div>
+                      <Link
+                        to="/profile"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Mon profil
+                      </Link>
                       <button
                         onClick={handleSignOut}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -158,6 +165,13 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Tableau de bord
+              </Link>
+              <Link
+                to="/profile"
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Mon profil
               </Link>
               <button
                 onClick={() => {
