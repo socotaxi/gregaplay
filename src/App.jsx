@@ -15,6 +15,7 @@ const CreateEventPage = lazy(() => import('./pages/CreateEventPage'));
 const SubmitVideoPage = lazy(() => import('./pages/SubmitVideoPage'));
 const FinalVideoPage = lazy(() => import('./pages/FinalVideoPage'));
 const InvitationPage = lazy(() => import('./pages/InvitationPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 
 // Route Guard for authenticated routes with improved profile handling
 const PrivateRoute = ({ children }) => {
@@ -100,18 +101,28 @@ function App() {
                   </PrivateRoute>
                 } 
               />
-              <Route 
-                path="/create-event" 
+              <Route
+                path="/create-event"
                 element={
                   <PrivateRoute>
                     <ErrorBoundary>
                       <CreateEventPage />
                     </ErrorBoundary>
                   </PrivateRoute>
-                } 
+                }
               />
-              <Route 
-                path="/events/:eventId" 
+              <Route
+                path="/profile"
+                element={
+                  <PrivateRoute>
+                    <ErrorBoundary>
+                      <ProfilePage />
+                    </ErrorBoundary>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/events/:eventId"
                 element={
                   <PrivateRoute>
                     <ErrorBoundary>
