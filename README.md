@@ -29,6 +29,7 @@ A modern React template for web applications and games, featuring React 18, Vite
 - `pnpm install` - Install dependencies
 - `pnpm run dev` - Start development server
 - `pnpm run lint` - Lint source files
+- `pnpm run build` - Build the project for production
 
 ## Tech Stack
 
@@ -37,3 +38,21 @@ A modern React template for web applications and games, featuring React 18, Vite
 - TailwindCSS
 - ESLint
 - Javascript
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and replace the placeholder values with your Supabase credentials.
+
+## Getting Started
+
+```bash
+pnpm install
+pnpm run dev
+```
+The project can be built for production with:
+
+```bash
+pnpm run build
+```
+
+You can run the Supabase SQL scripts using the Supabase dashboard or with a command-line tool such as `psql`.
