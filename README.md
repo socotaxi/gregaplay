@@ -37,3 +37,7 @@ A modern React template for web applications and games, featuring React 18, Vite
 - TailwindCSS
 - ESLint
 - Javascript
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
