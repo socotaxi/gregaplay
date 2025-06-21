@@ -8,7 +8,10 @@ const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { signIn, authError, resetAuthError } = useAuth();
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const { signIn, signInWithProvider, signInWithPhone, authError, resetAuthError } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -22,6 +25,37 @@ const LoginForm = () => {
     } catch (err) {
       console.error('Login error:', err);
       setError(err.message || 'Une erreur s\'est produite lors de la connexion.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProviderSignIn = async (provider) => {
+    try {
+      setError(null);
+      await signInWithProvider(provider);
+    } catch (err) {
+      console.error('OAuth login error:', err);
+      setError(err.message || 'Erreur lors de la connexion.');
+    }
+  };
+
+  const handlePhoneSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (!otpSent) {
+        await signInWithPhone({ phone });
+        setOtpSent(true);
+      } else {
+        await signInWithPhone({ phone, token: otp });
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      console.error('Phone auth error:', err);
+      setError(err.message || 'Erreur lors de la connexion par téléphone.');
     } finally {
       setLoading(false);
     }
@@ -47,6 +81,11 @@ const LoginForm = () => {
             {error}
           </div>
         )}
+
+        <div className="space-y-3 mb-6">
+          <Button fullWidth variant="secondary" onClick={() => handleProviderSignIn('google')}>Se connecter avec Google</Button>
+          <Button fullWidth variant="secondary" onClick={() => handleProviderSignIn('github')}>Se connecter avec GitHub</Button>
+        </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
@@ -113,6 +152,50 @@ const LoginForm = () => {
             disabled={loading}
           >
             Se connecter
+          </Button>
+        </form>
+
+        <hr className="my-6" />
+        <form className="space-y-4" onSubmit={handlePhoneSubmit}>
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+              Téléphone
+            </label>
+            <div className="mt-1">
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="+33612345678"
+              />
+            </div>
+          </div>
+
+          {otpSent && (
+            <div>
+              <label htmlFor="otp" className="block text-sm font-medium text-gray-700">
+                Code reçu
+              </label>
+              <div className="mt-1">
+                <input
+                  id="otp"
+                  name="otp"
+                  type="text"
+                  required
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+            </div>
+          )}
+
+          <Button type="submit" fullWidth loading={loading} disabled={loading}>
+            {otpSent ? 'Valider le code' : 'Envoyer le code'}
           </Button>
         </form>
       </div>
