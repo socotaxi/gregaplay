@@ -84,7 +84,14 @@ const FinalVideoPage = () => {
               </p>
             )}
           </div>
-          <div className="mt-4 flex md:mt-0 md:ml-4">
+          <div className="mt-4 flex md:mt-0 md:ml-4 space-x-2">
+            {event && (event.status === 'active' || event.status === 'ready') && (
+              <Link to={`/submit/${event.id}`}>
+                <Button>
+                  Soumettre une vidéo
+                </Button>
+              </Link>
+            )}
             <Link to="/dashboard">
               <Button variant="secondary">
                 Retour au tableau de bord
