@@ -23,9 +23,9 @@ const SubmitVideoPage = () => {
         const eventData = await eventService.getEvent(eventId);
         setEvent(eventData);
         
-        // Check if event is still active
-        if (eventData.status !== 'active') {
-          setError('Cet événement n\'accepte plus de vidéos.');
+        // Check if event is still open for submissions
+        if (eventData.status !== 'open') {
+          setError("Cet événement n'accepte plus de vidéos.");
         }
         
         // Check if event deadline has passed
