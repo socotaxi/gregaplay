@@ -29,3 +29,6 @@ const userService = {
     return data.publicUrl;
   }
 };
+
+export default userService;
+
