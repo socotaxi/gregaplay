@@ -78,6 +78,7 @@ psql < supabase_schema_setup.sql
 psql < supabase_add_description_column.sql
 psql < supabase_create_profile_trigger.sql
 psql < supabase_create_avatars_bucket.sql
+
 ```
 
 Running these scripts creates the required tables (including `events`) and
