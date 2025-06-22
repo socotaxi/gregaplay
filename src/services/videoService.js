@@ -31,6 +31,14 @@ const videoService = {
 
     if (uploadError) {
       console.error('Error uploading video:', uploadError);
+
+      // Provide a clearer message for row level security errors
+      if (uploadError.message && uploadError.message.includes('row-level security')) {
+        throw new Error(
+          'Impossible de téléverser la vidéo: vérifiez la configuration RLS du bucket.'
+        );
+      }
+
       throw new Error(uploadError.message);
     }
 
