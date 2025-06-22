@@ -51,9 +51,19 @@ const EventRow = memo(({ event, formatDate, getStatusInfo, onDelete, deletingEve
           Voir
         </Link>
         {event.status === 'active' && (
-          <a href={`/submit/${event.id}`} className="text-green-600 hover:text-green-900 mr-4" target="_blank" rel="noopener noreferrer">
-            Lien d'invitation
-          </a>
+          <>
+            <Link to={`/submit/${event.id}`} className="text-indigo-600 hover:text-indigo-900 mr-4">
+              Soumettre une vidéo
+            </Link>
+            <a
+              href={`/submit/${event.id}`}
+              className="text-green-600 hover:text-green-900 mr-4"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Lien d'invitation
+            </a>
+          </>
         )}
         <button
           onClick={() => onDelete(event.id)}
