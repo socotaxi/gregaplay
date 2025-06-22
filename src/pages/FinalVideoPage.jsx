@@ -64,9 +64,9 @@ const FinalVideoPage = () => {
     return <Loading fullPage />;
   }
 
-  const canStartProcessing = event && 
-    (event.status === 'ready' || event.status === 'active') && 
-    user && 
+  const canStartProcessing = event &&
+    (event.status === 'ready' || event.status === 'open') &&
+    user &&
     (user.id === event.user_id || user.role === 'admin');
 
   return (
@@ -85,7 +85,7 @@ const FinalVideoPage = () => {
             )}
           </div>
           <div className="mt-4 flex md:mt-0 md:ml-4 space-x-2">
-            {event && (event.status === 'active' || event.status === 'ready') && (
+            {event && (event.status === 'open' || event.status === 'ready') && (
               <Link to={`/submit/${event.id}`}>
                 <Button>
                   Soumettre une vidéo
@@ -218,16 +218,16 @@ const FinalVideoPage = () => {
                 <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
                   <dt className="text-sm font-medium text-gray-500">Statut</dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${event.status === 'active' ? 'bg-yellow-100 text-yellow-800' : 
-                        event.status === 'ready' ? 'bg-blue-100 text-blue-800' : 
-                        event.status === 'processing' ? 'bg-purple-100 text-purple-800' : 
-                        event.status === 'done' ? 'bg-green-100 text-green-800' : 
+                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                      ${event.status === 'open' ? 'bg-yellow-100 text-yellow-800' :
+                        event.status === 'ready' ? 'bg-blue-100 text-blue-800' :
+                        event.status === 'processing' ? 'bg-purple-100 text-purple-800' :
+                        event.status === 'done' ? 'bg-green-100 text-green-800' :
                         'bg-gray-100 text-gray-800'}`}>
-                      {event.status === 'active' ? 'En cours' : 
-                        event.status === 'ready' ? 'Prêt pour montage' : 
-                        event.status === 'processing' ? 'En traitement' : 
-                        event.status === 'done' ? 'Terminé' : 
+                      {event.status === 'open' ? 'Ouvert' :
+                        event.status === 'ready' ? 'Prêt pour montage' :
+                        event.status === 'processing' ? 'En traitement' :
+                        event.status === 'done' ? 'Terminé' :
                         event.status}
                     </span>
                   </dd>

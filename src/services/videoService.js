@@ -13,13 +13,32 @@ const videoService = {
     const fileExt = file.name.split('.').pop();
     const fileName = `${userId}_${Date.now()}.${fileExt}`;
     const filePath = `videos/${eventId}/${fileName}`;
-    
+
+    // Ensure the videos bucket exists before uploading
+    try {
+      const { data: bucket, error: bucketError } = await supabase.storage.getBucket('videos');
+      if (bucketError && bucketError.status === 404) {
+        await supabase.storage.createBucket('videos', { public: true });
+      }
+    } catch (bucketErr) {
+      // Log but continue - upload will fail if bucket truly doesn't exist
+      console.error('Error ensuring videos bucket:', bucketErr);
+    }
+
     const { error: uploadError } = await supabase.storage
       .from('videos')
       .upload(filePath, file);
 
     if (uploadError) {
       console.error('Error uploading video:', uploadError);
+
+      // Provide a clearer message for row level security errors
+      if (uploadError.message && uploadError.message.includes('row-level security')) {
+        throw new Error(
+          'Impossible de téléverser la vidéo: vérifiez la configuration RLS du bucket.'
+        );
+      }
+
       throw new Error(uploadError.message);
     }
 
