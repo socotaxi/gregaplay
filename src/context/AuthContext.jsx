@@ -206,11 +206,7 @@ export const AuthProvider = ({ children }) => {
               .from('profiles')
               .insert([minimalProfile])
               .select()
-              .single()
-              .catch(err => {
-                console.error('Insert profile error caught:', err);
-                return { data: null, error: err };
-              });
+              .single();
               
             if (insertError) {
               console.warn('Failed to create minimal profile:', insertError);
@@ -360,6 +356,36 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Sign in with social provider (OAuth)
+  const signInWithProvider = async (provider) => {
+    try {
+      setAuthError(null);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: window.location.origin + '/dashboard' }
+      });
+      if (error) {
+        console.error('OAuth sign in error:', error);
+        setAuthError({
+          type: 'signin',
+          message: error.message || 'Failed to sign in with provider',
+          details: error
+        });
+        throw error;
+      }
+      return data;
+    } catch (error) {
+      console.error('Error signing in with provider:', error);
+      setAuthError({
+        type: 'signin',
+        message: error.message || 'Failed to sign in with provider',
+        details: error
+      });
+      throw error;
+    }
+  };
+
+
   // Sign out user
   const signOut = async () => {
     try {
@@ -389,6 +415,12 @@ export const AuthProvider = ({ children }) => {
         throw error;
       }
 
+      if (!data || data.length === 0) {
+        console.warn('Profile update returned no data, refetching profile');
+        const refreshed = await fetchUserProfile(user.id);
+        return refreshed;
+      }
+
       setProfile(data[0]);
       return data[0];
     } catch (error) {
@@ -405,6 +437,7 @@ export const AuthProvider = ({ children }) => {
     isRecovering,
     signUp,
     signIn,
+    signInWithProvider,
     signOut,
     updateProfile,
     fetchUserProfile,

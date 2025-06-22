@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../ui/Button';
@@ -8,7 +8,7 @@ const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { signIn, authError, resetAuthError } = useAuth();
+  const { signIn, signInWithProvider, authError, resetAuthError } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -26,6 +26,17 @@ const LoginForm = () => {
       setLoading(false);
     }
   };
+
+  const handleProviderSignIn = async (provider) => {
+    try {
+      setError(null);
+      await signInWithProvider(provider);
+    } catch (err) {
+      console.error('OAuth login error:', err);
+      setError(err.message || 'Erreur lors de la connexion.');
+    }
+  };
+
 
   return (
     <div className="w-full max-w-md">
@@ -47,6 +58,10 @@ const LoginForm = () => {
             {error}
           </div>
         )}
+
+        <div className="space-y-3 mb-6">
+          <Button fullWidth variant="secondary" onClick={() => handleProviderSignIn('google')}>Se connecter avec Google</Button>
+        </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
@@ -115,6 +130,7 @@ const LoginForm = () => {
             Se connecter
           </Button>
         </form>
+
       </div>
     </div>
   );
