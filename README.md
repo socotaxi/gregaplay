@@ -76,6 +76,9 @@ connection:
 ```bash
 psql < supabase_schema_setup.sql
 psql < supabase_add_description_column.sql
+psql < supabase_create_profile_trigger.sql
+psql < supabase_create_avatars_bucket.sql
+psql < supabase_update_profiles_insert_policy.sql
 ```
 
 Running these scripts creates the required tables (including `events`) and
