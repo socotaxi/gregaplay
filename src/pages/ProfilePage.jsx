@@ -3,7 +3,6 @@ import MainLayout from '../components/layout/MainLayout';
 import Button from '../components/ui/Button';
 import { useAuth } from '../context/AuthContext';
 import userService from '../services/userService';
-import { toast } from 'react-toastify';
 
 const ProfilePage = () => {
   const { user, profile, updateProfile } = useAuth();
@@ -32,10 +31,7 @@ const ProfilePage = () => {
       }
 
       await updateProfile({ full_name: fullName, phone, avatar_url: avatarUrl });
-      toast.success('Profil mis à jour');
-    } catch (err) {
-      console.error('Profile update error:', err);
-      toast.error("Erreur lors de la mise à jour du profil");
+
     } finally {
       setLoading(false);
     }
@@ -48,7 +44,7 @@ const ProfilePage = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center space-x-4">
             <img
-              src={avatarPreview || '/assets/images/default-avatar.png'}
+
               alt="Avatar"
               className="w-20 h-20 rounded-full object-cover"
             />
@@ -96,5 +92,3 @@ const ProfilePage = () => {
     </MainLayout>
   );
 };
-
-export default ProfilePage;
