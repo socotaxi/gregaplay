@@ -2,15 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../ui/Button';
+import userService from '../../services/userService';
 
 const RegisterForm = () => {
   const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { signUp, authError, resetAuthError } = useAuth();
+  const { signUp, updateProfile, authError, resetAuthError } = useAuth();
   
   // Reset any auth errors when component mounts or unmounts
   useEffect(() => {
@@ -26,6 +30,14 @@ const RegisterForm = () => {
     }
   }, [authError]);
   const navigate = useNavigate();
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,12 +58,19 @@ const RegisterForm = () => {
     setLoading(true);
 
     try {
-      console.log('Attempting to sign up with:', { email, fullName });
+      console.log('Attempting to sign up with:', { email, fullName, phone });
       const result = await signUp({ email, password, fullName });
       console.log('Sign up result:', result);
-      
-      // Only navigate if we have a successful result
+
+      // Only continue if we have a successful result
       if (result && result.user) {
+        let avatarUrl = null;
+        if (avatarFile) {
+          avatarUrl = await userService.uploadAvatar(avatarFile, result.user.id);
+        }
+
+        await updateProfile({ phone, avatar_url: avatarUrl });
+
         console.log('Registration successful, navigating to dashboard');
         navigate('/dashboard');
       } else {
@@ -108,8 +127,35 @@ const RegisterForm = () => {
                 className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 placeholder="Jean Dupont"
               />
-            </div>
           </div>
+        </div>
+
+        <div className="flex items-center space-x-4">
+          <img
+            src={avatarPreview || '/assets/images/default-avatar.png'}
+            alt="Avatar"
+            className="w-20 h-20 rounded-full object-cover"
+          />
+          <input type="file" accept="image/*" onChange={handleFileChange} />
+        </div>
+
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+            Téléphone
+          </label>
+          <div className="mt-1">
+            <input
+              id="phone"
+              name="phone"
+              type="text"
+              autoComplete="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              placeholder="0601020304"
+            />
+          </div>
+        </div>
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
