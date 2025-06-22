@@ -50,7 +50,7 @@ const EventRow = memo(({ event, formatDate, getStatusInfo, onDelete, deletingEve
         <Link to={`/events/${event.id}`} className="text-indigo-600 hover:text-indigo-900 mr-4">
           Voir
         </Link>
-        {event.status === 'active' && (
+        {event.status === 'open' && (
           <>
             <Link to={`/submit/${event.id}`} className="text-indigo-600 hover:text-indigo-900 mr-4">
               Soumettre une vidéo
@@ -139,7 +139,7 @@ const DashboardPage = () => {
 
   // Get event status color and label - memoized to prevent recreation on each render
   const statusMap = useMemo(() => ({
-    active: { color: 'bg-yellow-100 text-yellow-800', label: 'En cours' },
+    open: { color: 'bg-yellow-100 text-yellow-800', label: 'Ouvert' },
     ready: { color: 'bg-blue-100 text-blue-800', label: 'Prêt pour montage' },
     processing: { color: 'bg-purple-100 text-purple-800', label: 'En traitement' },
     done: { color: 'bg-green-100 text-green-800', label: 'Terminé' },
