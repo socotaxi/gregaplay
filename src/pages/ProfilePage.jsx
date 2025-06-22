@@ -31,8 +31,7 @@ const ProfilePage = () => {
       }
 
       await updateProfile({ full_name: fullName, phone, avatar_url: avatarUrl });
-    } catch (err) {
-      console.error('Profile update error:', err);
+
     } finally {
       setLoading(false);
     }
@@ -45,7 +44,7 @@ const ProfilePage = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center space-x-4">
             <img
-              src={avatarPreview || 'https://via.placeholder.com/80'}
+
               alt="Avatar"
               className="w-20 h-20 rounded-full object-cover"
             />
@@ -93,5 +92,3 @@ const ProfilePage = () => {
     </MainLayout>
   );
 };
-
-export default ProfilePage;
