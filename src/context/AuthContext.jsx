@@ -206,11 +206,7 @@ export const AuthProvider = ({ children }) => {
               .from('profiles')
               .insert([minimalProfile])
               .select()
-              .single()
-              .catch(err => {
-                console.error('Insert profile error caught:', err);
-                return { data: null, error: err };
-              });
+              .single();
               
             if (insertError) {
               console.warn('Failed to create minimal profile:', insertError);
