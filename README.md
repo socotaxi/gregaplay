@@ -37,6 +37,20 @@ cp .env.example .env
 The resulting `.env` file is listed in `.gitignore` so it will not be committed
 to the repository.
 
+### Supabase setup
+
+Run the provided SQL files to initialize the database and storage. In addition
+to the existing setup scripts, execute the following to enable public video
+uploads:
+
+```sql
+\i supabase_create_videos_bucket.sql
+\i supabase_configure_videos_bucket_policies.sql
+```
+
+These scripts create a public `videos` bucket and configure row level security
+policies so users can upload clips without authentication.
+
 ## Available Scripts
 - `pnpm install` - Install dependencies
 - `pnpm run dev` - Start development server
