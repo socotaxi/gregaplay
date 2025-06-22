@@ -67,7 +67,26 @@ The project can be built for production with:
 pnpm run build
 ```
 
-You can run the Supabase SQL scripts using the Supabase dashboard or with a command-line tool such as `psql`.
+## Supabase Database Setup
+
+Before creating events you must initialize the database. Execute the SQL scripts
+found at the project root using the Supabase dashboard or a local `psql`
+connection:
+
+```bash
+psql < supabase_schema_setup.sql
+psql < supabase_add_description_column.sql
+psql < supabase_create_profile_trigger.sql
+psql < supabase_create_avatars_bucket.sql
+ main
+```
+
+Running these scripts creates the required tables (including `events`) and
+ensures columns such as `description` exist. Without this step event creation
+will fail.
+
+You can run the Supabase SQL scripts using the Supabase dashboard or with a
+command-line tool such as `psql`.
 
 ## Authentification sociale Google
 
