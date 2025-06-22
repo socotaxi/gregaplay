@@ -415,6 +415,12 @@ export const AuthProvider = ({ children }) => {
         throw error;
       }
 
+      if (!data || data.length === 0) {
+        console.warn('Profile update returned no data, refetching profile');
+        const refreshed = await fetchUserProfile(user.id);
+        return refreshed;
+      }
+
       setProfile(data[0]);
       return data[0];
     } catch (error) {
