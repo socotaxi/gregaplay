@@ -125,9 +125,15 @@ const InvitationCard = ({ invitation, onAccept, onDecline, currentUser }) => {
             <p className="text-gray-600 font-medium">❌ Vous avez décliné cette invitation</p>
           </div>
         ) : isAccepted ? (
-          <div className="text-center">
-            <p className="text-green-600 font-medium mb-3">✅ Invitation acceptée !</p>
-            <Button 
+          <div className="text-center space-y-3">
+            <p className="text-green-600 font-medium">✅ Invitation acceptée !</p>
+            <Button
+              onClick={() => window.location.href = `/submit/${event.id}`}
+              className="w-full"
+            >
+              🎥 Soumettre une vidéo
+            </Button>
+            <Button
               onClick={() => window.location.href = `/events/${event.id}`}
               className="w-full"
             >
