@@ -174,7 +174,11 @@ const DashboardPage = () => {
               Tableau de bord
             </h1>
             <p className="mt-1 text-sm text-gray-500">
-              Bienvenue, {profile?.full_name || user?.email}
+              Bienvenue,
+              {' '}
+              {profile?.full_name && profile.full_name !== 'User'
+                ? profile.full_name
+                : user?.user_metadata?.full_name || user?.email}
             </p>
           </div>
           <div className="mt-4 flex md:mt-0 md:ml-4">
