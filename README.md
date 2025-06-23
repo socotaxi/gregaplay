@@ -58,10 +58,6 @@ policies so users can upload clips without authentication.
 - `pnpm run build` - Build the project for production
 - `pnpm run start:server` - Launch the Express API server
 
-During development, the API server listens on port **4000**. The Vite dev
-server (port 3000) proxies all `/api` requests to this port, so ensure both
-servers are running when generating videos.
-
 ## Tech Stack
 
 - React
