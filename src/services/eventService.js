@@ -171,7 +171,7 @@ const eventService = {
   async getUserEvents(userId) {
     const { data, error } = await supabase
       .from('events')
-      .select('*')
+      .select('*, videos(count)')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -180,7 +180,10 @@ const eventService = {
       throw new Error(error.message);
     }
 
-    return data;
+    return data.map(event => ({
+      ...event,
+      video_count: event.videos?.[0]?.count || 0
+    }));
   },
 
   /**
@@ -191,7 +194,7 @@ const eventService = {
   async getEvent(eventId) {
     const { data, error } = await supabase
       .from('events')
-      .select('*')
+      .select('*, videos(count)')
       .eq('id', eventId)
       .single();
 
@@ -200,7 +203,10 @@ const eventService = {
       throw new Error(error.message);
     }
 
-    return data;
+    return {
+      ...data,
+      video_count: data?.videos?.[0]?.count || 0
+    };
   },
 
   /**
