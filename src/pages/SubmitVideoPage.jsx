@@ -77,11 +77,8 @@ const SubmitVideoPage = () => {
     setSubmitting(true);
 
     try {
-      // Create temporary user for the submission
-      const tempUserId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      // Upload video
-      await videoService.uploadVideo(selectedFile, eventId, tempUserId);
+      // Upload video without user
+      await videoService.uploadVideo(selectedFile, eventId, null, participantName);
       
       // Show success message
       setSuccess(true);
