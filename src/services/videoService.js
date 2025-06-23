@@ -1,4 +1,5 @@
 import supabase from '../lib/supabaseClient';
+import videoProcessingService from './videoProcessingService';
 
 const videoService = {
   /**
@@ -111,6 +112,15 @@ const videoService = {
     }
 
     return data.final_video_url;
+  },
+
+  /**
+   * Generate the final montage video for an event
+   * @param {string} eventId - The event ID
+   * @returns {Promise<object>} - Processing job information
+   */
+  async generateFinalVideo(eventId) {
+    return videoProcessingService.triggerVideoProcessing(eventId);
   },
 
   /**
