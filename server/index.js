@@ -1,3 +1,5 @@
+// eslint-env node
+/* global process, Buffer */
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
