@@ -56,6 +56,7 @@ policies so users can upload clips without authentication.
 - `pnpm run dev` - Start development server
 - `pnpm run lint` - Lint source files
 - `pnpm run build` - Build the project for production
+- `pnpm run start:server` - Launch the Express API server
 
 ## Tech Stack
 
