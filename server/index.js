@@ -20,6 +20,22 @@ const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
+// Vérifier que ffmpeg est disponible AVANT de lancer le serveur
+async function checkFfmpegAvailability() {
+  return new Promise((resolve, reject) => {
+    const check = spawn('ffmpeg', ['-version']);
+    check.on('error', () => reject(new Error('❌ FFmpeg non trouvé dans PATH')));
+    check.on('close', (code) => {
+      if (code === 0) {
+        console.log('✅ FFmpeg est disponible dans le système');
+        resolve();
+      } else {
+        reject(new Error('❌ FFmpeg est inaccessible ou mal configuré'));
+      }
+    });
+  });
+}
+
 app.post('/api/process-video', async (req, res) => {
   const { eventId } = req.query;
   if (!eventId) {
@@ -36,16 +52,16 @@ app.post('/api/process-video', async (req, res) => {
     if (supabase) {
       const { data: user, error } = await supabase.auth.getUser(token);
       if (error) throw error;
-      console.log('Processing requested by user', user?.user?.id, 'for event', eventId);
+      console.log('📦 Traitement demandé par utilisateur', user?.user?.id, 'pour event', eventId);
     } else {
-      console.warn('Supabase client not configured. Skipping auth check.');
+      console.warn('⚠️ Supabase client non configuré. Authentification ignorée.');
     }
 
     if (!supabase) {
       throw new Error('Supabase client not initialized');
     }
 
-    // Retrieve all videos for the event
+    // Récupération des vidéos
     const { data: videos, error: videosError } = await supabase
       .from('videos')
       .select('storage_path')
@@ -54,10 +70,10 @@ app.post('/api/process-video', async (req, res) => {
 
     if (videosError) throw videosError;
     if (!videos || videos.length === 0) {
-      throw new Error('No videos found for event');
+      throw new Error('Aucune vidéo trouvée pour cet événement');
     }
 
-    // Prepare temporary working directory
+    // Répertoire temporaire
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), `event_${eventId}_`));
     const listFile = path.join(tmpDir, 'list.txt');
     const fileList = [];
@@ -76,7 +92,7 @@ app.post('/api/process-video', async (req, res) => {
 
     await fs.promises.writeFile(listFile, fileList.join('\n'));
 
-    // Run ffmpeg to concatenate videos
+    // Montage avec FFmpeg
     const outputPath = path.join(tmpDir, 'final.mp4');
     await new Promise((resolve, reject) => {
       const ff = spawn('ffmpeg', [
@@ -91,11 +107,11 @@ app.post('/api/process-video', async (req, res) => {
       ff.on('error', reject);
       ff.on('close', code => {
         if (code === 0) resolve();
-        else reject(new Error(`ffmpeg exited with ${code}`));
+        else reject(new Error(`ffmpeg a quitté avec le code ${code}`));
       });
     });
 
-    // Upload final montage to Supabase storage
+    // Upload vers Supabase
     const storagePath = `final_videos/${eventId}.mp4`;
     const fileStream = fs.createReadStream(outputPath);
     const { error: uploadError } = await supabase.storage
@@ -114,14 +130,22 @@ app.post('/api/process-video', async (req, res) => {
       .eq('id', eventId);
     if (updateError) throw updateError;
 
-    return res.json({ message: 'Video processed', final_video_url: finalUrl });
+    return res.json({ message: '🎬 Vidéo traitée avec succès', final_video_url: finalUrl });
   } catch (error) {
-    console.error('Error in /api/process-video:', error);
-    return res.status(500).json({ error: 'Failed to initiate processing' });
+    console.error('❌ Erreur dans /api/process-video:', error);
+    return res.status(500).json({ error: 'Échec du traitement vidéo' });
   }
 });
 
+// Lancer le serveur seulement si ffmpeg est dispo
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`API server listening on port ${PORT}`);
-});
+checkFfmpegAvailability()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Serveur API lancé sur http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });
