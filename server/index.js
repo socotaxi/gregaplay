@@ -7,20 +7,32 @@ import os from 'os';
 import path from 'path';
 import { spawn } from 'child_process';
 
+// ➤ Charger les variables d'environnement
 dotenv.config();
+
+const envPath = path.resolve(process.cwd(), '.env');
+console.log('📁 Working directory =', process.cwd());
+console.log('📄 Est-ce que .env existe ? ', fs.existsSync(envPath));
+if (fs.existsSync(envPath)) {
+  console.log('📄 Contenu du .env :\n', fs.readFileSync(envPath, 'utf-8'));
+}
+
+console.log('🔍 SUPABASE_URL =', process.env.SUPABASE_URL);
+console.log('🔍 SERVICE_ROLE_KEY =', process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+// ➤ Authentification via service role
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabase = supabaseUrl && supabaseAnonKey
-  ? createClient(supabaseUrl, supabaseAnonKey)
+const supabase = supabaseUrl && supabaseServiceKey
+  ? createClient(supabaseUrl, supabaseServiceKey)
   : null;
 
-// Vérifier que ffmpeg est disponible AVANT de lancer le serveur
+// ➤ Vérifie que ffmpeg est disponible
 async function checkFfmpegAvailability() {
   return new Promise((resolve, reject) => {
     const check = spawn('ffmpeg', ['-version']);
@@ -36,27 +48,14 @@ async function checkFfmpegAvailability() {
   });
 }
 
+// ➤ Traitement de la vidéo
 app.post('/api/process-video', async (req, res) => {
   const { eventId } = req.query;
   if (!eventId) {
     return res.status(400).json({ error: 'Missing eventId' });
   }
 
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.replace('Bearer ', '');
-  if (!token) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
   try {
-    if (supabase) {
-      const { data: user, error } = await supabase.auth.getUser(token);
-      if (error) throw error;
-      console.log('📦 Traitement demandé par utilisateur', user?.user?.id, 'pour event', eventId);
-    } else {
-      console.warn('⚠️ Supabase client non configuré. Authentification ignorée.');
-    }
-
     if (!supabase) {
       throw new Error('Supabase client not initialized');
     }
@@ -137,15 +136,21 @@ app.post('/api/process-video', async (req, res) => {
   }
 });
 
-// Lancer le serveur seulement si ffmpeg est dispo
+// ➤ Lancement du serveur uniquement si ffmpeg et supabase sont prêts
 const PORT = process.env.PORT || 4000;
-checkFfmpegAvailability()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`🚀 Serveur API lancé sur http://localhost:${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error(err.message);
-    process.exit(1);
+
+async function startServer() {
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('❌ Variables SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquantes');
+  }
+  await checkFfmpegAvailability();
+
+  app.listen(PORT, () => {
+    console.log(`🚀 Serveur API lancé sur http://localhost:${PORT}`);
   });
+}
+
+startServer().catch((err) => {
+  console.error(err.message);
+  process.exit(1);
+});
