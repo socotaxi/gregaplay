@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS events (
   max_videos INTEGER DEFAULT 10,
   status TEXT CHECK (status IN ('open', 'processing', 'done')) DEFAULT 'open',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-  final_video_path TEXT
+  final_video_url TEXT
 );
 
 -- Row Level Security for events table
