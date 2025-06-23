@@ -20,11 +20,20 @@ const videoProcessingService = {
 
     // 2. Call serverless function to start processing
     try {
+      // Retrieve the current session to get the auth token
+      const { data, error: sessionError } = await supabase.auth.getSession();
+      const token = data?.session?.access_token;
+
+      if (sessionError || !token) {
+        console.error('Missing Supabase session:', sessionError);
+        throw new Error('User is not authenticated');
+      }
+
       const response = await fetch(`/api/process-video?eventId=${eventId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.auth.getSession()?.access_token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
