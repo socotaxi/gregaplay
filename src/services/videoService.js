@@ -8,10 +8,10 @@ const videoService = {
    * @param {string} userId - The user ID
    * @returns {Promise<Object>} - The uploaded video data
    */
-  async uploadVideo(file, eventId, userId, participantName) {
+  async uploadVideo(file, eventId, userId = null, participantName) {
     // 1. Upload file to storage
     const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}_${Date.now()}.${fileExt}`;
+    const fileName = `${userId || 'anon'}_${Date.now()}.${fileExt}`;
     const filePath = `videos/${eventId}/${fileName}`;
 
     // Ensure the videos bucket exists before uploading
@@ -53,7 +53,7 @@ const videoService = {
       .insert([
         {
           event_id: eventId,
-          user_id: userId,
+          user_id: userId || null,
           participant_name: participantName || 'Anonymous',
           storage_path: filePath,
           status: 'ready',
