@@ -1,5 +1,3 @@
-// eslint-env node
-/* global process, Buffer */
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -14,13 +12,7 @@ dotenv.config();
 
 const envPath = path.resolve(process.cwd(), '.env');
 console.log('📁 Working directory =', process.cwd());
-console.log('📄 Est-ce que .env existe ? ', fs.existsSync(envPath));
-if (fs.existsSync(envPath)) {
-  console.log('📄 Contenu du .env :\n', fs.readFileSync(envPath, 'utf-8'));
-}
-
-console.log('🔍 SUPABASE_URL =', process.env.SUPABASE_URL);
-console.log('🔍 SERVICE_ROLE_KEY =', process.env.SUPABASE_SERVICE_ROLE_KEY);
+console.log('📄 .env present ?', fs.existsSync(envPath));
 
 const app = express();
 app.use(cors());
