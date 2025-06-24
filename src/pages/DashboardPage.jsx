@@ -93,11 +93,24 @@ const DashboardPage = () => {
 
   const fetchEvents = useCallback(async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
       const userEvents = await eventService.getUserEvents(user.id);
-      setEvents(userEvents);
+      let invitedEvents = [];
+
+      if (user.email) {
+        invitedEvents = await eventService.getInvitedEvents(user.email);
+      }
+
+      const combined = [...userEvents];
+      invitedEvents.forEach(ev => {
+        if (!combined.some(e => e.id === ev.id)) {
+          combined.push(ev);
+        }
+      });
+
+      setEvents(combined);
     } catch (err) {
       console.error('Error fetching events:', err);
       setError("Impossible de charger vos événements. Veuillez réessayer.");
