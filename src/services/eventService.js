@@ -187,6 +187,27 @@ const eventService = {
   },
 
   /**
+   * Get events a user is invited to based on their email
+   * @param {string} email - The user's email address
+   * @returns {Promise<Array>} - The invited events
+   */
+  async getInvitedEvents(email) {
+    const { data, error } = await supabase.rpc('get_invited_events', {
+      user_email: email
+    });
+
+    if (error) {
+      console.error('Error fetching invited events:', error);
+      throw new Error(error.message);
+    }
+
+    return (data || []).map(event => ({
+      ...event,
+      video_count: event.video_count || 0
+    }));
+  },
+
+  /**
    * Get an event by ID
    * @param {string} eventId - The event ID
    * @returns {Promise<Object>} - The event
