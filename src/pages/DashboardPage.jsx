@@ -32,7 +32,7 @@ const EventRow = memo(({ event, formatDate, getStatusInfo, onDelete, deletingEve
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm text-gray-900">
-          {formatDate(event.end_date)}
+          {formatDate(event.deadline)}
         </div>
         <div className="text-sm text-gray-500">
           Date limite
