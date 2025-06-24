@@ -32,7 +32,12 @@ serve(async (req: Request) => {
         personalizations: [{ to: [{ email }] }],
         from: { email: FROM_EMAIL },
         subject,
-        content: [{ type: "text/plain", value: content }],
+        // Provide both text and HTML versions so the email client can render HTML
+        // while still offering a plain text fallback
+        content: [
+          { type: "text/plain", value: content },
+          { type: "text/html", value: content },
+        ],
       }),
     });
 
