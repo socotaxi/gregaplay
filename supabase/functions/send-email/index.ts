@@ -1,7 +1,17 @@
 /// <reference types="@supabase/functions" />
 import { serve } from "std/http/server.ts";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
   try {
     const { email, subject, content } = await req.json() as {
       email: string;
@@ -28,12 +38,21 @@ serve(async (req: Request) => {
 
     if (!response.ok) {
       const error = await response.text();
-      return new Response(`Erreur SendGrid: ${error}`, { status: 500 });
+      return new Response(`Erreur SendGrid: ${error}`, {
+        status: 500,
+        headers: corsHeaders,
+      });
     }
 
-    return new Response("Email envoyé avec succès", { status: 200 });
+    return new Response("Email envoyé avec succès", {
+      status: 200,
+      headers: corsHeaders,
+    });
 
   } catch (e: unknown) {
-    return new Response(`Erreur serveur: ${(e as Error).message}`, { status: 500 });
+    return new Response(`Erreur serveur: ${(e as Error).message}`, {
+      status: 500,
+      headers: corsHeaders,
+    });
   }
 });
