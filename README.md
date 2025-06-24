@@ -37,6 +37,9 @@ cp .env.example .env
 The resulting `.env` file is listed in `.gitignore` so it will not be committed
 to the repository.
 
+Set `VITE_APP_BASE_URL` to the public URL of your deployed app so invitation
+links in emails point to the correct domain.
+
 ### Supabase setup
 
 Run the provided SQL files to initialize the database and storage. In addition
