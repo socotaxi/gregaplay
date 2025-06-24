@@ -112,11 +112,9 @@ const emailService = {
       // Try to use Supabase Edge Function for email sending
       const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
-          to,
+          email: to,
           subject,
-          html,
-          eventId,
-          invitationToken
+          content: html
         }
       });
 
