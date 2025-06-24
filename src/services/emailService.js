@@ -188,7 +188,10 @@ const emailService = {
    * @returns {string} Full invitation URL
    */
   createInvitationLink(token) {
-    const baseUrl = window.location.origin || 'https://grega-play.com';
+    const baseUrl =
+      import.meta.env.VITE_APP_BASE_URL ||
+      (typeof window !== 'undefined' ? window.location.origin : '') ||
+      'https://grega-play.com';
     return `${baseUrl}/invitation/${token}`;
   },
 
