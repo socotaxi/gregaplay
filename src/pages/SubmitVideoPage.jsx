@@ -29,7 +29,7 @@ const SubmitVideoPage = () => {
         }
         
         // Check if event deadline has passed
-        const endDate = new Date(eventData.end_date);
+        const endDate = new Date(eventData.deadline);
         if (endDate < new Date()) {
           setError('La date limite de cet événement est dépassée.');
         }
@@ -247,7 +247,7 @@ const SubmitVideoPage = () => {
         {event && event.max_clip_duration && (
           <div className="mt-4 text-sm text-gray-500">
             <p>Durée maximale de la vidéo: {event.max_clip_duration} secondes</p>
-            <p>Date limite de soumission: {new Date(event.end_date).toLocaleDateString('fr-FR')}</p>
+            <p>Date limite de soumission: {new Date(event.deadline).toLocaleDateString('fr-FR')}</p>
           </div>
         )}
       </div>
