@@ -1,5 +1,5 @@
 /// <reference types="@supabase/functions" />
-import { serve } from "std/http/server.ts";
+import { serve } from "https://deno.land/std/http/server.ts";
 
 serve(async (req: Request) => {
   try {
