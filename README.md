@@ -44,7 +44,7 @@ links in emails point to the correct domain.
 
 Run the provided SQL files to initialize the database and storage. In addition
 to the existing setup scripts, execute the following to enable public video
-uploads:
+uploads and allow invited users to access events:
 
 ```sql
 \i supabase_create_videos_bucket.sql
@@ -52,10 +52,12 @@ uploads:
 \i supabase_get_invited_events_function.sql
 \i supabase_get_user_events_function.sql
 \i supabase_update_events_read_policy.sql
+\i supabase_allow_invited_event_access.sql
 ```
 
 These scripts create a public `videos` bucket and configure row level security
-policies so users can upload clips without authentication.
+policies so users can upload clips without authentication. They also set up a
+helper function for checking invitation access.
 
 ## Available Scripts
 - `pnpm install` - Install dependencies

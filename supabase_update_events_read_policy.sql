@@ -10,10 +10,5 @@ CREATE POLICY "Users can read events they created or were invited to"
   FOR SELECT
   USING (
     auth.uid() = user_id
-    OR id IN (
-      SELECT event_id
-      FROM invitations
-      WHERE email = (auth.jwt()->>'email')
-        AND status IN ('pending', 'accepted')
-    )
+    OR can_access_event(id, (auth.jwt()->>'email'))
   );
