@@ -70,6 +70,7 @@ Grega Play is a collaborative video montage application that allows users to cre
 - **supabase_add_description_column.sql**: SQL script to add the missing 'description' column to the 'events' table.
 - **supabase_fix_invitations_table.sql**: SQL script to fix the invitations table structure with all required columns.
 - **supabase_get_invited_events_function.sql**: Adds a helper function to retrieve events for invited users.
+- **supabase_get_user_events_function.sql**: Returns all events a user created or is invited to.
 - **React Template Files**: Includes all components and configurations for the React application, including services for video, invitations, and notifications.
 
 # Technology Stack
