@@ -96,33 +96,12 @@ const DashboardPage = () => {
 
     try {
       setLoading(true);
-      const userEvents = await eventService.getUserEvents(user.id);
-      setEvents(userEvents);
+      const dashboardEvents = await eventService.getDashboardEvents(user.id, user.email);
+      setEvents(dashboardEvents);
+      setError(null);
     } catch (err) {
-      console.error('Error fetching user events:', err);
+      console.error('Error fetching events:', err);
       setError(err?.message || "Impossible de charger vos événements. Veuillez réessayer.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      let invitedEvents = [];
-      if (user.email) {
-        invitedEvents = await eventService.getInvitedEvents(user.email);
-      }
-
-      setEvents(prev => {
-        const combined = [...prev];
-        invitedEvents.forEach(ev => {
-          if (!combined.some(e => e.id === ev.id)) {
-            combined.push(ev);
-          }
-        });
-        return combined;
-      });
-    } catch (err) {
-      console.error('Error fetching invited events:', err);
-      toast.warning("Certains événements invités n'ont pas pu être chargés.");
     } finally {
       setLoading(false);
     }

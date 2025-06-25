@@ -208,6 +208,29 @@ const eventService = {
   },
 
   /**
+   * Get all dashboard events for a user (created or invited)
+   * @param {string} userId - The user's ID
+   * @param {string} email - The user's email
+   * @returns {Promise<Array>} - The dashboard events
+   */
+  async getDashboardEvents(userId, email) {
+    const { data, error } = await supabase.rpc('get_user_events', {
+      p_user_id: userId,
+      p_user_email: email
+    });
+
+    if (error) {
+      console.error('Error fetching dashboard events:', error);
+      throw new Error(error.message);
+    }
+
+    return (data || []).map(event => ({
+      ...event,
+      video_count: event.video_count || 0
+    }));
+  },
+
+  /**
    * Get an event by ID
    * @param {string} eventId - The event ID
    * @returns {Promise<Object>} - The event
