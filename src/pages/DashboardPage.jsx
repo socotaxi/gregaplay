@@ -96,7 +96,18 @@ const DashboardPage = () => {
 
     try {
       setLoading(true);
-
+      const dashboardEvents = await eventService.getDashboardEvents(
+        user.id,
+        user.email,
+      );
+      setEvents(dashboardEvents);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      setError(
+        err?.message ||
+          "Impossible de charger vos événements. Veuillez réessayer.",
+      );
     } finally {
       setLoading(false);
     }
