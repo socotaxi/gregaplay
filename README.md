@@ -50,6 +50,7 @@ uploads:
 \i supabase_create_videos_bucket.sql
 \i supabase_configure_videos_bucket_policies.sql
 \i supabase_get_invited_events_function.sql
+\i supabase_get_user_events_function.sql
 ```
 
 These scripts create a public `videos` bucket and configure row level security
