@@ -40,6 +40,13 @@ to the repository.
 Set `VITE_APP_BASE_URL` to the public URL of your deployed app so invitation
 links in emails point to the correct domain.
 
+### Email sending setup
+
+The Supabase `send-email` function requires a `SENDGRID_API_KEY` to send
+invitation emails. Define this key in your `.env` file for local development or
+add it to your Supabase project environment variables. Without this variable,
+event creation will fail when trying to send invitation emails.
+
 ### Supabase setup
 
 Run the provided SQL files to initialize the database and storage. In addition
