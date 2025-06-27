@@ -292,14 +292,6 @@ const CreateEventPage = () => {
     setLoading(true);
     toast.info('Création de l\'événement en cours...');
 
-    // ULTRA AGGRESSIVE: Force navigation after 5 seconds no matter what
-    const forceNavigateTimeout = setTimeout(() => {
-      console.log('FORCE NAVIGATION triggered after 5 seconds');
-      setLoading(false);
-      toast.info('Navigation automatique vers le tableau de bord. La création se poursuit en arrière-plan.');
-      navigate('/dashboard');
-    }, 5000); // 5 seconds maximum wait time
-
       // Prepare event data outside of try/catch for access in multiple places
       console.log('🔍 STEP 2: Preparing event data');
       
@@ -379,41 +371,25 @@ const CreateEventPage = () => {
       }, 0);
     });
 
-      // Non-blocking handling of the result
-      console.log('🔍 STEP 6: Setting up promise result handler');
-      createEventPromise.then(result => {
-        console.log('🔍 STEP 7: Promise result received:', result);
-        const totalTime = performance.now() - totalStartTime;
-        console.log(`Total execution flow took ${Math.round(totalTime)}ms`);
-        
-        if (result.success) {
-          console.log('✅ Event creation successful');
-          toast.success('Événement créé avec succès!');
-        } else {
-          console.error('❌ Event creation failed in promise result');
-          const errorMsg = result.error?.message || result.error || 'Erreur lors de la création';
-          console.error('Event creation error details:', result.error);
-          console.error('Error message will be:', errorMsg);
-          toast.error(`Erreur: ${errorMsg}`);
-          setError(errorMsg);
-        }
-      }).catch((promiseError) => {
-        console.error('❌ STEP ERROR: Promise catch triggered:', promiseError);
-        toast.error('Erreur inattendue lors de la création');
-        setError('Erreur inattendue');
-      });
+      console.log('🔍 STEP 6: Awaiting event creation promise');
+      const result = await createEventPromise;
+      const totalTime = performance.now() - totalStartTime;
+      console.log(`Total execution flow took ${Math.round(totalTime)}ms`);
 
-      // Immediately navigate away - don't wait for anything
-      // This ensures user never gets trapped in a loading state
-      console.log('🔍 STEP 8: Setting up navigation timeout');
-      setTimeout(() => {
-        console.log('🔍 STEP 9: Navigation timeout triggered');
-        setLoading(false);
-        clearTimeout(forceNavigateTimeout);
-        console.log('Immediate navigation to dashboard');
-        toast.info('Redirection vers le tableau de bord...');
+      setLoading(false);
+
+      if (result.success) {
+        console.log('✅ Event creation successful');
+        toast.success('Événement créé avec succès!');
         navigate('/dashboard');
-      }, 2000); // Allow 2 seconds for user to see the toast message
+      } else {
+        console.error('❌ Event creation failed');
+        const errorMsg = result.error?.message || result.error || 'Erreur lors de la création';
+        console.error('Error message will be:', errorMsg);
+        toast.error(`Erreur: ${errorMsg}`);
+        setError(errorMsg);
+      }
+
       
     } catch (handleSubmitError) {
       console.error('❌ CRITICAL ERROR in handleSubmit:', handleSubmitError);
