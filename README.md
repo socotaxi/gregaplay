@@ -69,7 +69,7 @@ These scripts create a public `videos` bucket and configure row level security
 policies so users can upload clips without authentication. They also set up
 helper functions for checking invitation access and create an `email_queue`
 table used to store emails if sending fails. The final command updates the
-`videos` table policy so only authenticated users invited to an event can add
+`videos` table policy so event creators and invited users can add
 clips.
 
 ## Available Scripts
