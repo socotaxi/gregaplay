@@ -61,12 +61,15 @@ uploads and allow invited users to access events:
 \i supabase_update_events_read_policy.sql
 \i supabase_allow_invited_event_access.sql
 \i supabase_create_email_queue.sql
+\i supabase_update_videos_insert_policy.sql
 ```
 
 These scripts create a public `videos` bucket and configure row level security
 policies so users can upload clips without authentication. They also set up
 helper functions for checking invitation access and create an `email_queue`
-table used to store emails if sending fails.
+table used to store emails if sending fails. The final command updates the
+`videos` table policy so only authenticated users invited to an event can add
+clips.
 
 ## Available Scripts
 - `pnpm install` - Install dependencies
