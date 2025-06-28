@@ -403,7 +403,7 @@ export const AuthProvider = ({ children }) => {
   // Update user profile
   const updateProfile = async (profileData) => {
     try {
-      if (!user) throw new Error('No user logged in');
+      if (!user) throw new Error('Merci de confirmer votre mail');
 
       const { data, error } = await supabase
         .from('profiles')
