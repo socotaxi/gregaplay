@@ -62,6 +62,7 @@ uploads and allow invited users to access events:
 \i supabase_allow_invited_event_access.sql
 \i supabase_create_email_queue.sql
 \i supabase_update_videos_insert_policy.sql
+\i supabase_update_invitation_email_compare.sql
 ```
 
 These scripts create a public `videos` bucket and configure row level security
