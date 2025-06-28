@@ -82,3 +82,9 @@ table used to store emails if sending fails.
 - TailwindCSS
 - ESLint
 - Javascript
+
+## Inviter des participants
+
+- Depuis la page d'une vidéo finale, cliquez sur **"Inviter des participants"** pour accéder à la gestion des participants.
+- Saisissez une liste d'adresses email séparées par des virgules ou des retours à la ligne et, si besoin, un message personnel.
+- Validez le formulaire pour envoyer les invitations aux nouvelles personnes sélectionnées.
