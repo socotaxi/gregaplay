@@ -92,6 +92,13 @@ const FinalVideoPage = () => {
                 </Button>
               </Link>
             )}
+            {event && user && user.id === event.user_id && (
+              <Link to={`/events/${event.id}/participants`}>
+                <Button variant="secondary">
+                  Inviter des participants
+                </Button>
+              </Link>
+            )}
             <Link to="/dashboard">
               <Button variant="secondary">
                 Retour au tableau de bord

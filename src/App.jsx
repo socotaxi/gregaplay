@@ -16,6 +16,7 @@ const SubmitVideoPage = lazy(() => import('./pages/SubmitVideoPage'));
 const FinalVideoPage = lazy(() => import('./pages/FinalVideoPage'));
 const InvitationPage = lazy(() => import('./pages/InvitationPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const ManageParticipantsPage = lazy(() => import('./pages/ManageParticipantsPage'));
 
 // Route Guard
 const PrivateRoute = ({ children }) => {
@@ -72,6 +73,9 @@ function App() {
               } />
               <Route path="/events/:eventId" element={
                 <PrivateRoute><ErrorBoundary><FinalVideoPage /></ErrorBoundary></PrivateRoute>
+              } />
+              <Route path="/events/:eventId/participants" element={
+                <PrivateRoute><ErrorBoundary><ManageParticipantsPage /></ErrorBoundary></PrivateRoute>
               } />
 
               <Route path="*" element={<Navigate to="/" replace />} />
