@@ -87,11 +87,17 @@ CREATE POLICY "Users can read videos from their events"
     SELECT user_id FROM events WHERE id = videos.event_id
   ));
 
--- Create policy to allow anyone to insert videos (for public submissions)
-CREATE POLICY "Anyone can insert videos"
+-- Create policy to allow event creators or invited users to insert videos
+CREATE POLICY "Creators and invited users can insert videos"
   ON videos
   FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (
+    auth.uid() IS NOT NULL
+    AND (
+      auth.uid() = (SELECT user_id FROM events WHERE id = event_id)
+      OR can_access_event(event_id, auth.jwt()->>'email')
+    )
+  );
 
 -- Create notifications table
 CREATE TABLE IF NOT EXISTS notifications (
