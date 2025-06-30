@@ -29,6 +29,11 @@ const videoProcessingService = {
         throw new Error('User is not authenticated');
       }
 
+      const API_BASE_URL =
+  import.meta.env.MODE === 'development'
+    ? 'http://localhost:4000'
+    : ''; // laisse vide en production si tu utilises le même domaine
+    
       const response = await fetch(`/api/process-video?eventId=${eventId}`, {
         method: 'POST',
         headers: {

@@ -9,7 +9,6 @@ import os from 'os';
 import path from 'path';
 import { spawn } from 'child_process';
 
-// ➤ Charger les variables d'environnement
 dotenv.config();
 
 const envPath = path.resolve(process.cwd(), '.env');
@@ -20,7 +19,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ➤ Authentification via service role
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -28,7 +26,6 @@ const supabase = supabaseUrl && supabaseServiceKey
   ? createClient(supabaseUrl, supabaseServiceKey)
   : null;
 
-// ➤ Vérifie que ffmpeg est disponible
 async function checkFfmpegAvailability() {
   return new Promise((resolve, reject) => {
     const check = spawn('ffmpeg', ['-version']);
@@ -44,7 +41,6 @@ async function checkFfmpegAvailability() {
   });
 }
 
-// ➤ Traitement de la vidéo
 app.post('/api/process-video', async (req, res) => {
   const { eventId } = req.query;
   if (!eventId) {
@@ -56,7 +52,8 @@ app.post('/api/process-video', async (req, res) => {
       throw new Error('Supabase client not initialized');
     }
 
-    // Récupération des vidéos
+    console.log(`🎬 Lancement du traitement pour eventId: ${eventId}`);
+
     const { data: videos, error: videosError } = await supabase
       .from('videos')
       .select('storage_path')
@@ -68,16 +65,27 @@ app.post('/api/process-video', async (req, res) => {
       throw new Error('Aucune vidéo trouvée pour cet événement');
     }
 
-    // Répertoire temporaire
+    console.log(`📂 ${videos.length} vidéos récupérées pour event ${eventId}`);
+
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), `event_${eventId}_`));
     const listFile = path.join(tmpDir, 'list.txt');
     const fileList = [];
 
     for (const v of videos) {
+      console.log(`📦 Tentative de téléchargement du fichier : ${v.storage_path}`);
+
       const { data: fileData, error: fileErr } = await supabase.storage
         .from('videos')
         .download(v.storage_path);
-      if (fileErr) throw fileErr;
+
+      if (fileErr) {
+        console.error(`❌ Erreur téléchargement de ${v.storage_path}:`, fileErr);
+        return res.status(500).json({
+          error: 'Erreur lors du téléchargement d’une vidéo',
+          path: v.storage_path,
+          details: fileErr.message || fileErr
+        });
+      }
 
       const filePath = path.join(tmpDir, path.basename(v.storage_path));
       const buffer = Buffer.from(await fileData.arrayBuffer());
@@ -87,8 +95,9 @@ app.post('/api/process-video', async (req, res) => {
 
     await fs.promises.writeFile(listFile, fileList.join('\n'));
 
-    // Montage avec FFmpeg
     const outputPath = path.join(tmpDir, 'final.mp4');
+    console.log('▶️ Lancement de FFmpeg...');
+
     await new Promise((resolve, reject) => {
       const ff = spawn('ffmpeg', [
         '-y',
@@ -98,41 +107,60 @@ app.post('/api/process-video', async (req, res) => {
         '-c', 'copy',
         outputPath
       ]);
-      ff.stderr.on('data', d => console.log(d.toString()));
+
+      ff.stderr.on('data', d => console.log(`🎥 FFmpeg: ${d.toString()}`));
       ff.on('error', reject);
       ff.on('close', code => {
-        if (code === 0) resolve();
-        else reject(new Error(`ffmpeg a quitté avec le code ${code}`));
+        if (code === 0) {
+          console.log('✅ Montage terminé avec succès');
+          resolve();
+        } else {
+          reject(new Error(`❌ FFmpeg a quitté avec le code ${code}`));
+        }
       });
     });
 
-    // Upload vers Supabase
     const storagePath = `final_videos/${eventId}.mp4`;
-    const fileStream = fs.createReadStream(outputPath);
+    console.log(`⬆️ Envoi du fichier final sur Supabase à : ${storagePath}`);
+
+    // Correction : lire le fichier en buffer pour éviter l’erreur `duplex`
+    const buffer = await fs.promises.readFile(outputPath);
     const { error: uploadError } = await supabase.storage
       .from('videos')
-      .upload(storagePath, fileStream, { upsert: true });
-    if (uploadError) throw uploadError;
+      .upload(storagePath, buffer, {
+        upsert: true,
+        contentType: 'video/mp4'
+      });
+
+    if (uploadError) {
+      console.error('❌ Erreur lors de l’upload du fichier final :', uploadError);
+      throw uploadError;
+    }
 
     const { data: urlData } = supabase.storage
       .from('videos')
       .getPublicUrl(storagePath);
+
     const finalUrl = urlData.publicUrl;
+    console.log('📎 URL publique de la vidéo finale :', finalUrl);
 
     const { error: updateError } = await supabase
       .from('events')
       .update({ final_video_url: finalUrl, status: 'done' })
       .eq('id', eventId);
-    if (updateError) throw updateError;
+
+    if (updateError) {
+      console.error('❌ Erreur mise à jour table events :', updateError);
+      throw updateError;
+    }
 
     return res.json({ message: '🎬 Vidéo traitée avec succès', final_video_url: finalUrl });
   } catch (error) {
     console.error('❌ Erreur dans /api/process-video:', error);
-    return res.status(500).json({ error: 'Échec du traitement vidéo' });
+    return res.status(500).json({ error: 'Échec du traitement vidéo', details: error.message });
   }
 });
 
-// ➤ Lancement du serveur uniquement si ffmpeg et supabase sont prêts
 const PORT = process.env.PORT || 4000;
 
 async function startServer() {
