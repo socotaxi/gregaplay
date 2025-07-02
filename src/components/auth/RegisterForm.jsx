@@ -222,13 +222,13 @@ const RegisterForm = () => {
             />
             <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
               J'accepte les{' '}
-              <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <Link to="/terms" className="font-medium text-indigo-600 hover:text-indigo-500">
                 conditions d'utilisation
-              </a>{' '}
+              </Link>{' '}
               et la{' '}
-              <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <Link to="/privacy" className="font-medium text-indigo-600 hover:text-indigo-500">
                 politique de confidentialité
-              </a>
+              </Link>
             </label>
           </div>
 
