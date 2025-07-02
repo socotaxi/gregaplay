@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MainLayout from '../components/layout/MainLayout';
 import Button from '../components/ui/Button';
 import { useAuth } from '../context/AuthContext';
@@ -12,6 +12,13 @@ const ProfilePage = () => {
   const [avatarFile, setAvatarFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const authMethod = user?.app_metadata?.provider || 'email';
+
+  // Update local state when profile context changes
+  useEffect(() => {
+    setFullName(profile?.full_name || '');
+    setPhone(profile?.phone || '');
+    setAvatarPreview(profile?.avatar_url || '');
+  }, [profile]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -44,7 +51,7 @@ const ProfilePage = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center space-x-4">
             <img
-
+              src={avatarPreview || '/assets/images/default-avatar.png'}
               alt="Avatar"
               className="w-20 h-20 rounded-full object-cover"
             />
