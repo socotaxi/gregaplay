@@ -99,14 +99,17 @@ app.post('/api/process-video', async (req, res) => {
     console.log('▶️ Lancement de FFmpeg...');
 
     await new Promise((resolve, reject) => {
-      const ff = spawn('ffmpeg', [
-        '-y',
-        '-f', 'concat',
-        '-safe', '0',
-        '-i', listFile,
-        '-c', 'copy',
-        outputPath
-      ]);
+   const ff = spawn('ffmpeg', [
+  '-y',
+  '-f', 'concat',
+  '-safe', '0',
+  '-i', listFile,
+  '-c:v', 'libx264',
+  '-preset', 'fast',
+  '-crf', '23',
+  '-c:a', 'aac',
+  outputPath // ✅ ne pas oublier la virgule avant cette ligne
+]);
 
       ff.stderr.on('data', d => console.log(`🎥 FFmpeg: ${d.toString()}`));
       ff.on('error', reject);
