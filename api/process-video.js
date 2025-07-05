@@ -17,6 +17,7 @@ export default async function handler(req, res) {
   }
 
   const { eventId } = req.query;
+  console.log('🎯 Event ID:', eventId);
   if (!eventId) {
     return res.status(400).json({ error: 'eventId requis dans la requête' });
   }
@@ -33,7 +34,7 @@ export default async function handler(req, res) {
       throw new Error('Aucune vidéo trouvée pour cet événement');
     }
 
-    const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), `event_${eventId}_`));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), `event_${eventId}_`));
     const listFile = path.join(tmpDir, 'list.txt');
     const fileList = [];
 
@@ -57,8 +58,9 @@ export default async function handler(req, res) {
     }
 
     await fs.promises.writeFile(listFile, fileList.join('\n'));
-
     const outputPath = path.join(tmpDir, 'final.mp4');
+
+    console.log('📍 FFmpeg path:', ffmpegPath);
 
     await new Promise((resolve, reject) => {
       const ff = spawn(ffmpegPath, [
@@ -76,11 +78,8 @@ export default async function handler(req, res) {
       ff.stderr.on('data', d => console.log(`🎥 FFmpeg: ${d.toString()}`));
       ff.on('error', reject);
       ff.on('close', code => {
-        if (code === 0) {
-          resolve();
-        } else {
-          reject(new Error(`FFmpeg exited with code ${code}`));
-        }
+        if (code === 0) resolve();
+        else reject(new Error(`FFmpeg exited with code ${code}`));
       });
     });
 
