@@ -33,7 +33,7 @@ export default async function handler(req, res) {
       throw new Error('Aucune vidéo trouvée pour cet événement');
     }
 
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), `event_${eventId}_`));
+    const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), `event_${eventId}_`));
     const listFile = path.join(tmpDir, 'list.txt');
     const fileList = [];
 
