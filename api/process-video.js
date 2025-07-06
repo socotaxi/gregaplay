@@ -5,6 +5,9 @@ import os from 'os';
 import path from 'path';
 import { spawn } from 'child_process';
 import ffmpegPath from 'ffmpeg-static';
+import { chmodSync } from 'fs';
+chmodSync(ffmpegPath, 0o755); // ← rend le fichier exécutable
+
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
