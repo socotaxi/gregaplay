@@ -6,8 +6,8 @@ import path from 'path';
 import { spawn } from 'child_process';
 import ffmpegPath from 'ffmpeg-static';
 import { chmodSync } from 'fs';
-chmodSync(ffmpegPath, 0o755); // ← rend le fichier exécutable
 
+chmodSync(ffmpegPath, 0o755); // rendre exécutable
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -20,9 +20,8 @@ export default async function handler(req, res) {
   }
 
   const { eventId } = req.query;
-  console.log('🎯 Event ID:', eventId);
   if (!eventId) {
-    return res.status(400).json({ error: 'eventId requis dans la requête' });
+    return res.status(400).json({ error: 'eventId requis' });
   }
 
   try {
@@ -34,7 +33,7 @@ export default async function handler(req, res) {
 
     if (videosError) throw videosError;
     if (!videos || videos.length === 0) {
-      throw new Error('Aucune vidéo trouvée pour cet événement');
+      throw new Error('Aucune vidéo trouvée');
     }
 
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), `event_${eventId}_`));
@@ -46,13 +45,7 @@ export default async function handler(req, res) {
         .from('videos')
         .download(v.storage_path);
 
-      if (fileErr) {
-        return res.status(500).json({
-          error: 'Erreur téléchargement vidéo',
-          path: v.storage_path,
-          details: fileErr.message || fileErr
-        });
-      }
+      if (fileErr) throw fileErr;
 
       const filePath = path.join(tmpDir, path.basename(v.storage_path));
       const buffer = Buffer.from(await fileData.arrayBuffer());
@@ -62,8 +55,6 @@ export default async function handler(req, res) {
 
     await fs.promises.writeFile(listFile, fileList.join('\n'));
     const outputPath = path.join(tmpDir, 'final.mp4');
-
-    console.log('📍 FFmpeg path:', ffmpegPath);
 
     await new Promise((resolve, reject) => {
       const ff = spawn(ffmpegPath, [
@@ -75,7 +66,7 @@ export default async function handler(req, res) {
         '-preset', 'fast',
         '-crf', '23',
         '-c:a', 'aac',
-        outputPath
+        outputPath,
       ]);
 
       ff.stderr.on('data', d => console.log(`🎥 FFmpeg: ${d.toString()}`));
@@ -90,7 +81,7 @@ export default async function handler(req, res) {
     const storagePath = `final_videos/${eventId}.mp4`;
 
     const { error: uploadError } = await supabase.storage
-      .from('videos')
+      .from('final_videos')
       .upload(storagePath, buffer, {
         upsert: true,
         contentType: 'video/mp4'
@@ -99,7 +90,7 @@ export default async function handler(req, res) {
     if (uploadError) throw uploadError;
 
     const { data: urlData } = supabase.storage
-      .from('videos')
+      .from('final_videos')
       .getPublicUrl(storagePath);
 
     const finalUrl = urlData.publicUrl;
@@ -111,12 +102,9 @@ export default async function handler(req, res) {
 
     if (updateError) throw updateError;
 
-    return res.status(200).json({ message: '✅ Vidéo traitée', final_video_url: finalUrl });
-  } catch (error) {
-    console.error('❌ Erreur process-video:', error);
-    return res.status(500).json({
-      error: 'Erreur serveur',
-      details: error.message
-    });
+    return res.status(200).json({ message: '🎬 Vidéo traitée avec succès', final_video_url: finalUrl });
+  } catch (err) {
+    console.error('❌ Erreur de génération vidéo :', err);
+    return res.status(500).json({ error: 'Erreur serveur', details: err.message });
   }
 }

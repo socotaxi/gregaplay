@@ -2,68 +2,59 @@ import supabase from '../lib/supabaseClient';
 
 const videoProcessingService = {
   /**
-   * Trigger video processing for an event
-   * @param {string} eventId - The event ID
-   * @returns {Promise<Object>} - The processing job
+   * Déclenche le traitement vidéo pour un événement
+   * @param {string} eventId - L'ID de l'événement
+   * @returns {Promise<Object>} - Résultat du traitement
    */
   async triggerVideoProcessing(eventId) {
-    // 1. Update event status to 'processing'
+    // 1. Mettre à jour le statut de l’événement
     const { error: updateError } = await supabase
       .from('events')
       .update({ status: 'processing' })
       .eq('id', eventId);
 
     if (updateError) {
-      console.error('Error updating event status:', updateError);
+      console.error('Erreur lors de la mise à jour du statut :', updateError);
       throw new Error(updateError.message);
     }
 
-    // 2. Call serverless function to start processing
     try {
-      // Retrieve the current session to get the auth token
-      const { data, error: sessionError } = await supabase.auth.getSession();
-      const token = data?.session?.access_token;
-
-      if (sessionError || !token) {
-        console.error('Missing Supabase session:', sessionError);
-        throw new Error('User is not authenticated');
-      }
-
+      // 2. Construire l’URL d’API adaptée à l’environnement
       const API_BASE_URL =
-  import.meta.env.MODE === 'development'
-    ? 'http://localhost:4000'
-    : ''; // laisse vide en production si tu utilises le même domaine
-    
-      const response = await fetch(`/api/process-video?eventId=${eventId}`, {
+        import.meta.env.MODE === 'development'
+          ? 'http://localhost:4000'
+          : 'https://gregaplay.vercel.app'; // ← domaine de ton app Vercel
+
+      const response = await fetch(`${API_BASE_URL}/api/process-video?eventId=${eventId}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+          'Content-Type': 'application/json'
+        }
       });
 
       if (!response.ok) {
-        throw new Error('Failed to start video processing');
+        const errorData = await response.json();
+        throw new Error(errorData.details || errorData.error || 'Erreur serveur');
       }
 
       return await response.json();
     } catch (error) {
-      console.error('Error triggering video processing:', error);
-      
-      // Revert status on error
+      console.error('Erreur lors du déclenchement du traitement vidéo :', error);
+
+      // 3. Revenir à "ready" si échec
       await supabase
         .from('events')
         .update({ status: 'ready' })
         .eq('id', eventId);
-        
-      throw new Error('Failed to start video processing');
+
+      throw new Error('Échec du traitement vidéo');
     }
   },
 
   /**
-   * Check processing status
-   * @param {string} eventId - The event ID
-   * @returns {Promise<string>} - The processing status
+   * Vérifie le statut de traitement
+   * @param {string} eventId
+   * @returns {Promise<string>}
    */
   async checkProcessingStatus(eventId) {
     const { data, error } = await supabase
@@ -73,7 +64,7 @@ const videoProcessingService = {
       .single();
 
     if (error) {
-      console.error('Error checking processing status:', error);
+      console.error('Erreur lors de la vérification du statut :', error);
       throw new Error(error.message);
     }
 
@@ -81,15 +72,15 @@ const videoProcessingService = {
   },
 
   /**
-   * Set the final video URL for an event
-   * @param {string} eventId - The event ID
-   * @param {string} videoUrl - The video URL
-   * @returns {Promise<Object>} - The updated event
+   * Définit l'URL finale de la vidéo dans la table events
+   * @param {string} eventId
+   * @param {string} videoUrl
+   * @returns {Promise<Object>}
    */
   async setFinalVideoUrl(eventId, videoUrl) {
     const { data, error } = await supabase
       .from('events')
-      .update({ 
+      .update({
         final_video_url: videoUrl,
         status: 'done'
       })
@@ -97,7 +88,7 @@ const videoProcessingService = {
       .select();
 
     if (error) {
-      console.error('Error setting final video URL:', error);
+      console.error('Erreur lors de la mise à jour de la vidéo finale :', error);
       throw new Error(error.message);
     }
 
@@ -105,9 +96,9 @@ const videoProcessingService = {
   },
 
   /**
-   * Check if all event videos are valid for processing
-   * @param {string} eventId - The event ID
-   * @returns {Promise<boolean>} - Whether all videos are valid
+   * Vérifie que toutes les vidéos d'un événement sont validées
+   * @param {string} eventId
+   * @returns {Promise<boolean>}
    */
   async validateEventVideos(eventId) {
     const { data, error } = await supabase
@@ -116,11 +107,10 @@ const videoProcessingService = {
       .eq('event_id', eventId);
 
     if (error) {
-      console.error('Error validating event videos:', error);
+      console.error('Erreur lors de la validation des vidéos :', error);
       throw new Error(error.message);
     }
 
-    // Check if all videos are validated
     const invalidVideos = data.filter(video => video.status !== 'validated');
     return invalidVideos.length === 0;
   }
