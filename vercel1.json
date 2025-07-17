@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/**/*.js", "use": "@vercel/node" },
+    { "src": "index.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1.js" },
+    { "src": "/manifest.json", "headers": { "cache-control": "public,max-age=0" }, "dest": "/manifest.json" },
+    { "src": "/service-worker.js", "dest": "/service-worker.js" },
+    { "src": "/icons/(.*)", "dest": "/icons/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ],
+  "includeFiles": ["public/**"]
+}

@@ -1,12 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Configure Vite with a proxy so API requests reach the Express server
 export default defineConfig({
   plugins: [react()],
-  define: {
-    'process.env': process.env,
-  },
+  base: '/', // ou './' si tu sais pourquoi
+  publicDir: 'public',
+
   server: {
     port: 3000,
     host: '127.0.0.1',
@@ -18,4 +17,10 @@ export default defineConfig({
       },
     },
   },
+
+  // Optionnel si tu veux injecter des env précises :
+  define: {
+    'process.env.SUPABASE_URL': JSON.stringify(process.env.SUPABASE_URL),
+    'process.env.SUPABASE_ANON_KEY': JSON.stringify(process.env.SUPABASE_ANON_KEY),
+  }
 });

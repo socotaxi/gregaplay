@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 /.env
 client_secret_*.json 
+.vercel
